@@ -36,10 +36,16 @@ szk_cleaning_rule_m <- szk_cleaning_rule %>%
 xnt_his_data <- read.xlsx("02_Inputs/雪诺同HIS原始数据.xlsx")
 szk_his_data <- read.xlsx("02_Inputs/思则凯HIS原始数据.xlsx")
 
+## hospital code
+hosp.code <- read.xlsx('02_Inputs/FB2020016_医院编码_3.xlsx') %>% 
+  filter(!is.na(PHA.code), PHA.code != '0') %>% 
+  select(`医院编码`, pha = PHA.code, rp = `是否在生殖中心医院list`)
+
 
 ##---- Diagnosis cleaning ----
 ## 雪诺同
 xnt_his_data_m <- xnt_his_data %>% 
+  inner_join(hosp.code, by = '医院编码') %>% 
   mutate(`原始诊断` = toupper(`原始诊断`), 
          `原始诊断` = gsub('[[:punct:]]', ' ', `原始诊断`), 
          `原始诊断` = trimws(`原始诊断`)) %>% 
@@ -58,6 +64,7 @@ xnt_his_data_m <- xnt_his_data %>%
 
 ## 思则凯
 szk_his_data_m <- szk_his_data %>%
+  inner_join(hosp.code, by = '医院编码') %>% 
   mutate(`原始诊断` = toupper(`原始诊断`), 
          `原始诊断` = gsub('[[:punct:]]', ' ', `原始诊断`), 
          `原始诊断` = trimws(`原始诊断`)) %>% 
@@ -75,5 +82,11 @@ szk_his_data_m <- szk_his_data %>%
       TRUE ~ '其他'
     )
   )
+
+
+
+
+
+
 
 
