@@ -1,8 +1,13 @@
-library(openxlsx)
-library(tidyverse)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+# ProjectName:  HIS Merck
+# Purpose:      HIS data cleaning
+# programmer:   Zhe Liu
+# Date:         2020-12-29
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
-## readin cleaning rule
 
+##---- Readin data ----
+## 雪诺同
 xnt_cleaning_rule <- 
   read.xlsx("02_Inputs/雪诺同诊断清洗规则.xlsx", startRow = 2, rows = 2:9)
 
@@ -15,7 +20,7 @@ xnt_cleaning_rule_m <- xnt_cleaning_rule %>%
   summarise(关键词 = paste(关键词, collapse = "|")) %>%
   ungroup() 
 
-
+## 思则凯
 szk_cleaning_rule <- read.xlsx("02_Inputs/思则凯诊断清洗规则.xlsx", rows = 1:10)
 
 szk_cleaning_rule_m <- szk_cleaning_rule %>%
@@ -27,7 +32,7 @@ szk_cleaning_rule_m <- szk_cleaning_rule %>%
   summarise(关键词 = paste(关键词, collapse = "|")) %>%
   ungroup() 
 
-## readin his data
+## his data
 xnt_his_data <- read.xlsx("02_Inputs/雪诺同HIS原始数据.xlsx")
 szk_his_data <- read.xlsx("02_Inputs/思则凯HIS原始数据.xlsx")
   
