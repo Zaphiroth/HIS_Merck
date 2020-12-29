@@ -1,8 +1,6 @@
 library(openxlsx)
 library(tidyverse)
 
-
-
 ## readin cleaning rule
 
 xnt_cleaning_rule <- 
