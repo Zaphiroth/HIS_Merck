@@ -29,6 +29,10 @@ suppressPackageStartupMessages({
   require(lubridate)
   require(forecast)
   require(kknn)
+  require(cluster)
+  require(ClusterR)
+  require(mclust)
+  require(factoextra)
 })
 
 ##---- setup the directories ----

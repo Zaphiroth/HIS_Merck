@@ -39,7 +39,8 @@ szk_his_data <- read.xlsx("02_Inputs/思则凯HIS原始数据.xlsx")
 ## hospital code
 hosp.code <- read.xlsx('02_Inputs/FB2020016_医院编码_3.xlsx') %>% 
   filter(!is.na(PHA.code), PHA.code != '0') %>% 
-  select(`医院编码`, pha = PHA.code, rp = `是否在生殖中心医院list`)
+  select(`医院编码`, pha = PHA.code, rp = `是否在生殖中心医院list`, 
+         obs = `妇产科医生数`, onc = `肿瘤科医生数`)
 
 
 ##---- Diagnosis cleaning ----
@@ -49,7 +50,7 @@ xnt_his_data_m <- xnt_his_data %>%
   mutate(`原始诊断` = toupper(`原始诊断`), 
          `原始诊断` = gsub('[[:punct:]]', ' ', `原始诊断`), 
          `原始诊断` = trimws(`原始诊断`)) %>% 
-  filter(!is.na(`原始诊断`), nchar(`原始诊断`) > 0) %>% 
+  filter(!is.na(`清洗后科室`), !is.na(`原始诊断`), nchar(`原始诊断`) > 0) %>% 
   mutate(
     `诊断` = case_when(
       grepl('移植|IVF|FET|试管|取卵|人工授精|OPU|ET|IUI', `原始诊断`) ~ '试管婴儿补充黄体酮',
@@ -68,7 +69,7 @@ szk_his_data_m <- szk_his_data %>%
   mutate(`原始诊断` = toupper(`原始诊断`), 
          `原始诊断` = gsub('[[:punct:]]', ' ', `原始诊断`), 
          `原始诊断` = trimws(`原始诊断`)) %>% 
-  filter(!is.na(`原始诊断`), nchar(`原始诊断`) > 0) %>% 
+  filter(!is.na(`最终科室`), !is.na(`原始诊断`), nchar(`原始诊断`) > 0) %>% 
   mutate(
     `诊断` = case_when(
       grepl('前列腺癌|PCA|前列腺CA|前列腺肿瘤|前列腺增生', `原始诊断`) ~ '前列腺癌或增生',
