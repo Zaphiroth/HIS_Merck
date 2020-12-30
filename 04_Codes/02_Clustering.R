@@ -33,7 +33,24 @@ xnt.sample <- xnt_his_data_m %>%
               values_from = value_prop, 
               values_fill = 0)
 
-szk.sample
+szk.sample <- szk_his_data_m %>% 
+  group_by(pha, rp, dept = `最终科室`, diag = `诊断`) %>%
+  summarise(value = sum(`金额`, na.rm = TRUE)) %>% 
+  ungroup() %>% 
+  group_by(pha) %>% 
+  mutate(value_sum = sum(value, na.rm = TRUE)) %>% 
+  ungroup() %>% 
+  left_join(szk.var, by = c('dept', 'diag')) %>% 
+  mutate(value_prop = value / value_sum) %>% 
+  pivot_wider(id_cols = c(pha, rp), 
+              names_from = var_name, 
+              values_from = value_prop, 
+              values_fill = 0)
+
+
+##---- Cluster ----
+##xht
+mb Mclust(iris[,-5], 3)
 
 
 
