@@ -134,12 +134,11 @@ szk.kmeans2 <- kmeans(szk.sample[, -1],
                       algorithm = 'Hartigan-Wong', 
                       trace = FALSE)
 
-szk.kmeans.plot2 <- fviz_cluster(szk.kmeans2, szk.sample2[, -1], 
-                                 ellipse = TRUE, 
-                                 stand = FALSE, repel = FALSE) +
+fviz_cluster(szk.kmeans2, szk.sample2[, -1], 
+             ellipse = TRUE, 
+             stand = FALSE, repel = FALSE) +
   geom_hline(aes(yintercept = 0), linetype = "dashed") +
   geom_vline(aes(xintercept = 0), linetype = "dashed")
-print(szk.kmeans.plot2)
 
 szk.cluster2 <- data.frame(cluster = szk.kmeans2$cluster) %>% 
   bind_cols(szk.sample2) %>% 
@@ -155,22 +154,22 @@ writeDataTable(wb, 'Var', szk.var2)
 saveWorkbook(wb, '03_Outputs/SZK_Cluster2.xlsx', overwrite = TRUE)
 
 ## GMM
-szk.bic2 <- mclustBIC(szk.sample2[, -1])
-plot(szk.bic2)
-summary(szk.bic2)
-
-szk.icl2 <- mclustICL(szk.sample2[, -1])
-plot(szk.icl2)
-summary(szk.icl2)
-
-szk.gmm2 <- Mclust(szk.sample2[, -1], 9)
-
-fviz_cluster(szk.gmm2, szk.sample2[, -1])
-
-szk.cluster2 <- data.frame(cluster = szk.gmm2$classification) %>% 
-  bind_cols(szk.sample2) %>% 
-  left_join(hosp.code, by = 'pha') %>% 
-  select(cluster, pha, rp, obs, onc, starts_with('Var'))
+# szk.bic2 <- mclustBIC(szk.sample2[, -1])
+# plot(szk.bic2)
+# summary(szk.bic2)
+# 
+# szk.icl2 <- mclustICL(szk.sample2[, -1])
+# plot(szk.icl2)
+# summary(szk.icl2)
+# 
+# szk.gmm2 <- Mclust(szk.sample2[, -1], 9)
+# 
+# fviz_cluster(szk.gmm2, szk.sample2[, -1])
+# 
+# szk.cluster2 <- data.frame(cluster = szk.gmm2$classification) %>% 
+#   bind_cols(szk.sample2) %>% 
+#   left_join(hosp.code, by = 'pha') %>% 
+#   select(cluster, pha, rp, obs, onc, starts_with('Var'))
 
 
 ##---- Profile ----
