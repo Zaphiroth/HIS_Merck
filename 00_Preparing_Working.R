@@ -26,6 +26,7 @@ suppressPackageStartupMessages({
   require(plm)
   require(dynlm)
   require(randomForest)
+  require(caret)
   require(lubridate)
   require(forecast)
   require(kknn)
