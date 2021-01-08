@@ -127,7 +127,7 @@ szk.nb.gap2 <- fviz_nbclust(szk.sample2[, -1],
 
 ## k-means
 # k = 9
-szk.kmeans2 <- kmeans(szk.sample[, -1], 
+szk.kmeans2 <- kmeans(szk.sample2[, -1], 
                       centers = 9, 
                       iter.max = 10, 
                       nstart = 30, 

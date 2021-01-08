@@ -82,9 +82,9 @@ rf.sample.szk <- szk.cluster2 %>%
 
 
 ##---- Random forest XNT ----
-## XNT
+## divide data set
 set.seed(111)
-train.xnt <- createDataPartition(1:nrow(rf.sample.xnt), p = 0.9, list = FALSE)
+train.xnt <- createDataPartition(1:nrow(rf.sample.xnt), p = 0.8, list = FALSE)
 
 rf.train.xnt <- rf.sample.xnt[c(train.xnt), ]
 rf.test.xnt <- rf.sample.xnt[-c(train.xnt), ]
@@ -107,7 +107,7 @@ rf.mtry.xnt <- train(cluster ~ .,
 
 print(rf.mtry.xnt)
 best.mtry.xnt <- rf.mtry.xnt$bestTune$mtry
-tune.grid <- expand.grid(.mtry = best.mtry.xnt)
+tune.grid.xnt <- expand.grid(.mtry = best.mtry.xnt)
 
 ## best maxnodes
 store.maxnodes.xnt <- list()
@@ -117,7 +117,7 @@ for (i in 2:25) {
                        data = rf.train.xnt[, -2], 
                        method = 'rf', 
                        metric = 'Accuracy', 
-                       tuneGrid = tune.grid, 
+                       tuneGrid = tune.grid.xnt, 
                        trControl = train.control, 
                        importance = TRUE, 
                        maxnodes = i)
@@ -126,17 +126,17 @@ for (i in 2:25) {
 }
 
 summary(resamples(store.maxnodes.xnt))
-best.maxnodes.xnt <- 15
+best.maxnodes.xnt <- 11
 
 ## best ntree
 store.ntree.xnt <- list()
-for (i in seq(100, 2000, 100)) {
+for (i in seq(100, 5000, 100)) {
   set.seed(444)
   rf.ntree <- train(cluster ~ ., 
                     data = rf.train.xnt[, -2], 
                     method = 'rf', 
                     metric = 'Accuracy', 
-                    tuneGrid = tune.grid, 
+                    tuneGrid = tune.grid.xnt, 
                     trControl = train.control, 
                     importance = TRUE, 
                     maxnodes = best.maxnodes.xnt, 
@@ -146,7 +146,7 @@ for (i in seq(100, 2000, 100)) {
 }
 
 summary(resamples(store.ntree.xnt))
-best.ntree.xnt <- 700
+best.ntree.xnt <- 2100
 
 ## fit model
 set.seed(555)
@@ -154,81 +154,127 @@ rf.fit.xnt <- train(cluster ~ .,
                     data = rf.train.xnt[, -2], 
                     method = 'rf', 
                     metric = 'Accuracy', 
-                    tuneGrid = tune.grid, 
+                    tuneGrid = tune.grid.xnt, 
                     trControl = train.control, 
                     importance = TRUE, 
                     ntree = best.ntree.xnt, 
                     maxnodes = best.maxnodes.xnt)
 
-rf.fit.xnt <- randomForest(cluster ~ ., 
-                           data = rf.train.xnt[, -2], 
-                           ntree = best.ntree.xnt, 
-                           mtry = best.mtry.xnt, 
-                           maxnodes = best.maxnodes.xnt, 
-                           importance = TRUE)
-
 ## evaluate
 rf.pred.xnt <- predict(rf.fit.xnt, rf.test.xnt[, -c(1, 2)])
+confusionMatrix(rf.pred.xnt, rf.test.xnt$cluster) # accuracy = 0.35
 
+## final model
+set.seed(666)
+rf.model.xnt <- train(cluster ~ ., 
+                      data = rf.sample.xnt[, -2], 
+                      method = 'rf', 
+                      metric = 'Accuracy', 
+                      tuneGrid = tune.grid.xnt, 
+                      trControl = train.control, 
+                      importance = TRUE, 
+                      ntree = best.ntree.xnt, 
+                      maxnodes = best.maxnodes.xnt)
 
+varImp(rf.model.xnt)
 
 
 ##---- Random forest SZK ----
-## XNT
-set.seed(666)
+## divide data set
+set.seed(1111)
 train.szk <- createDataPartition(1:nrow(rf.sample.szk), p = 0.8, list = FALSE)
 
 rf.train.szk <- rf.sample.szk[c(train.szk), ]
 rf.test.szk <- rf.sample.szk[-c(train.szk), ]
 
-## mtry
-err.mtry.szk <- NULL
-set.seed(777)
-for (i in 1:(length(rf.train.szk)-2)) {
-  rf.mtry <- randomForest(x = rf.train.szk[, -c(1, 2)], 
-                          y = rf.train.szk[, 1], 
-                          xtest = rf.test.szk[, -c(1, 2)], 
-                          ytest = rf.test.szk[, 1], 
-                          ntree = 5000, 
-                          mtry = i, 
-                          proximity = TRUE)
-  err <- mean(rf.mtry$err.rate, na.rm = TRUE)
-  err.mtry.szk[i] <- err
+## train control
+train.control <- trainControl(method = 'cv', 
+                              number = 10, 
+                              search = 'grid')
+
+## best mtry
+set.seed(2222)
+tune.grid.init <- expand.grid(.mtry = 1:(ncol(rf.train.szk)-2))
+rf.mtry.szk <- train(cluster ~ ., 
+                     data = rf.train.szk[, -2], 
+                     method = 'rf', 
+                     metric = 'Accuracy', 
+                     tuneGrid = tune.grid.init, 
+                     trControl = train.control, 
+                     importance = TRUE)
+
+print(rf.mtry.szk)
+best.mtry.szk <- rf.mtry.szk$bestTune$mtry
+tune.grid.szk <- expand.grid(.mtry = best.mtry.szk)
+
+## best maxnodes
+store.maxnodes.szk <- list()
+for (i in 2:25) {
+  set.seed(3333)
+  rf.maxnodes <- train(cluster ~ ., 
+                       data = rf.train.szk[, -2], 
+                       method = 'rf', 
+                       metric = 'Accuracy', 
+                       tuneGrid = tune.grid.szk, 
+                       trControl = train.control, 
+                       importance = TRUE, 
+                       maxnodes = i)
+  key <- toString(i)
+  store.maxnodes.szk[[key]] <- rf.maxnodes
 }
-mtry.szk <- which.min(err.mtry.szk)
 
-## ntree
-set.seed(888)
-rf.ntree <- randomForest(x = rf.train.szk[, -c(1, 2)], 
-                         y = rf.train.szk[, 1], 
-                         xtest = rf.test.szk[, -c(1, 2)], 
-                         ytest = rf.test.szk[, 1], 
-                         ntree = 1000, 
-                         mtry = mtry.szk, 
-                         proximity = TRUE)
-plot(rf.ntree)
-ntree.szk <- 600
+summary(resamples(store.maxnodes.szk))
+best.maxnodes.szk <- 16
 
-## model
-set.seed(999)
-rf.train.model.szk <- randomForest(x = rf.train.szk[, -c(1, 2)], 
-                                   y = rf.train.szk[, 1], 
-                                   xtest = rf.test.szk[, -c(1, 2)], 
-                                   ytest = rf.test.szk[, 1], 
-                                   ntree = ntree.szk, 
-                                   mtry = mtry.szk, 
-                                   proximity = TRUE)
+## best ntree
+store.ntree.szk <- list()
+for (i in seq(100, 5000, 100)) {
+  set.seed(4444)
+  rf.ntree <- train(cluster ~ ., 
+                    data = rf.train.szk[, -2], 
+                    method = 'rf', 
+                    metric = 'Accuracy', 
+                    tuneGrid = tune.grid.szk, 
+                    trControl = train.control, 
+                    importance = TRUE, 
+                    maxnodes = best.maxnodes.szk, 
+                    ntree = i)
+  key <- toString(i)
+  store.ntree.szk[[key]] <- rf.ntree
+}
 
-importance(rf.train.model.szk)
-varImpPlot(rf.train.model.szk)
+summary(resamples(store.ntree.szk))
+best.ntree.szk <- 900
 
-## model result
-set.seed(000)
-rf.model.szk <- randomForest(x = rf.sample.szk[, -c(1, 2)], 
-                             y = rf.sample.szk[, 1], 
-                             ntree = ntree.szk, 
-                             mtry = mtry.szk, 
-                             proximity = TRUE)
+## fit model
+set.seed(5555)
+rf.fit.szk <- train(cluster ~ ., 
+                    data = rf.train.szk[, -2], 
+                    method = 'rf', 
+                    metric = 'Accuracy', 
+                    tuneGrid = tune.grid.szk, 
+                    trControl = train.control, 
+                    importance = TRUE, 
+                    ntree = best.ntree.szk, 
+                    maxnodes = best.maxnodes.szk)
+
+## evaluate
+rf.pred.szk <- predict(rf.fit.szk, rf.test.szk[, -c(1, 2)])
+confusionMatrix(rf.pred.szk, rf.test.szk$cluster) # accuracy = 0.2
+
+## final model
+set.seed(6666)
+rf.model.szk <- train(cluster ~ ., 
+                      data = rf.sample.szk[, -2], 
+                      method = 'rf', 
+                      metric = 'Accuracy', 
+                      tuneGrid = tune.grid.szk, 
+                      trControl = train.control, 
+                      importance = TRUE, 
+                      ntree = best.ntree.szk, 
+                      maxnodes = best.maxnodes.szk)
+
+varImp(rf.model.szk)
 
 
 ##---- Prediction ----
@@ -236,24 +282,37 @@ rf.model.szk <- randomForest(x = rf.sample.szk[, -c(1, 2)],
 rf.unsample.xnt <- max.sales %>% 
   filter(!(pha %in% rf.sample.xnt$pha)) %>% 
   left_join(hosp.pf, by = 'pha') %>% 
-  select(pha, group, sales, level, property, region, location, type, tier, 
-         spec1, spec2, est, beds)
+  filter(!is.na(est)) %>% 
+  mutate(group = factor(group), 
+         region = factor(region), 
+         tier = factor(tier)) %>% 
+  select(pha, group, sales, region, tier, est, beds)
 
 rf.unsample.szk <- max.sales %>% 
   filter(!(pha %in% rf.sample.szk$pha)) %>% 
   left_join(hosp.pf, by = 'pha') %>% 
-  select(pha, group, sales, level, property, region, location, type, tier, 
-         spec1, spec2, est, beds)
+  filter(!is.na(est)) %>% 
+  mutate(group = factor(group), 
+         region = factor(region), 
+         tier = factor(tier)) %>% 
+  select(pha, group, sales, region, tier, est, beds)
 
 ## prediction
-rf.pred.xnt <- predict(rf.model.xnt, newdata = rf.unsample.xnt[, -1])
+rf.pred.xnt <- predict(rf.model.xnt, rf.unsample.xnt[, -1])
+rf.pred.szk <- predict(rf.model.szk, rf.unsample.szk[, -1])
 
+## result
+universe.cluster.xnt <- rf.unsample.xnt %>% 
+  mutate(cluster = rf.pred.xnt) %>% 
+  bind_rows(rf.sample.xnt)
 
+universe.cluster.szk <- rf.unsample.szk %>% 
+  mutate(cluster = rf.pred.szk) %>% 
+  bind_rows(rf.sample.szk)
 
-
-
-
-
-
-
-
+wb <- createWorkbook()
+addWorksheet(wb, 'XNT')
+addWorksheet(wb, 'SZK')
+writeDataTable(wb, 'XNT', universe.cluster.xnt)
+writeDataTable(wb, 'SZK', universe.cluster.szk)
+saveWorkbook(wb, '03_Outputs/Universe_Cluster_Result.xlsx', overwrite = TRUE)

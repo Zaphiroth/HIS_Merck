@@ -63,6 +63,8 @@ xnt_his_data_m <- xnt_his_data %>%
     )
   )
 
+write.xlsx(xnt_his_data_m, '03_Outputs/XNT_HIS_Sample.xlsx')
+
 ## 思则凯
 szk_his_data_m <- szk_his_data %>%
   inner_join(hosp.code, by = '医院编码') %>% 
@@ -84,10 +86,4 @@ szk_his_data_m <- szk_his_data %>%
     )
   )
 
-
-
-
-
-
-
-
+write.xlsx(szk_his_data_m, '03_Outputs/SZK_HIS_Sample.xlsx')
