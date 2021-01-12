@@ -7,7 +7,8 @@
 
 
 options(java.parameters = "-Xmx2048m",
-        stringsAsFactors = FALSE)
+        stringsAsFactors = FALSE, 
+        warn = -1)
 
 ##---- loading the required packages ----
 suppressPackageStartupMessages({
@@ -25,6 +26,7 @@ suppressPackageStartupMessages({
   require(tidyverse)
   require(plm)
   require(dynlm)
+  require(prophet)
   require(randomForest)
   require(caret)
   require(lubridate)

@@ -84,7 +84,12 @@ fviz_cluster(xnt_mclust2, xnt.sample2[, -1])
 ## kmeans
 xnt_kmeans2 <- kmeans(xnt.sample2[, -1], k, iter.max = 1000L, nstart = 50L, 
                       algorithm = "Hartigan-Wong", trace = FALSE)
-fviz_cluster(xnt_kmeans2, xnt.sample2[, -1])
+
+fviz_cluster(xnt_kmeans2, xnt.sample2[, -1], 
+             ellipse = TRUE, geom = 'point', 
+             stand = FALSE, repel = FALSE) +
+  geom_hline(aes(yintercept = 0), linetype = "dashed") +
+  geom_vline(aes(xintercept = 0), linetype = "dashed")
 
 ## 选择kmeans
 xnt.cluster2 <- data.frame(cluster = xnt_kmeans2$cluster) %>% 
@@ -135,7 +140,7 @@ szk.kmeans2 <- kmeans(szk.sample2[, -1],
                       trace = FALSE)
 
 fviz_cluster(szk.kmeans2, szk.sample2[, -1], 
-             ellipse = TRUE, 
+             ellipse = TRUE, geom = 'point', 
              stand = FALSE, repel = FALSE) +
   geom_hline(aes(yintercept = 0), linetype = "dashed") +
   geom_vline(aes(xintercept = 0), linetype = "dashed")
