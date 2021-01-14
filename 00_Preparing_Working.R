@@ -7,8 +7,7 @@
 
 
 options(java.parameters = "-Xmx2048m",
-        stringsAsFactors = FALSE, 
-        warn = -1)
+        stringsAsFactors = FALSE)
 
 ##---- loading the required packages ----
 suppressPackageStartupMessages({

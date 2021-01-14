@@ -49,14 +49,14 @@ diag.2020q4.xnt <- diag.dist.xnt %>%
 diag.2021.xnt <- diag.dist.xnt %>% 
   filter(year == 2020) %>% 
   bind_rows(diag.2020q4.xnt) %>% 
-  group_by(cluster, dept, diag, packid) %>% 
-  mutate(value = sum(value, na.rm = TRUE)) %>% 
+  mutate(year = 2021) %>% 
+  group_by(cluster, year, quarter, dept, diag, packid) %>% 
+  summarise(value = sum(value, na.rm = TRUE)) %>% 
   ungroup() %>% 
-  group_by(cluster, packid) %>% 
+  group_by(cluster, year, quarter, packid) %>% 
   mutate(value_sum = sum(value, na.rm = TRUE)) %>% 
   ungroup() %>% 
-  mutate(prop = value / value_sum, 
-         year = 2021)
+  mutate(prop = value / value_sum)
 
 diag.ratio.xnt <- bind_rows(diag.dist.xnt, diag.2020q4.xnt, diag.2021.xnt)
 
@@ -86,14 +86,14 @@ diag.2020q4.szk <- diag.dist.szk %>%
 diag.2021.szk <- diag.dist.szk %>% 
   filter(year == 2020) %>% 
   bind_rows(diag.2020q4.szk) %>% 
-  group_by(cluster, dept, diag, packid) %>% 
-  mutate(value = sum(value, na.rm = TRUE)) %>% 
+  mutate(year = 2021) %>% 
+  group_by(cluster, year, quarter, dept, diag, packid) %>% 
+  summarise(value = sum(value, na.rm = TRUE)) %>% 
   ungroup() %>% 
-  group_by(cluster, packid) %>% 
+  group_by(cluster, year, quarter, packid) %>% 
   mutate(value_sum = sum(value, na.rm = TRUE)) %>% 
   ungroup() %>% 
-  mutate(prop = value / value_sum, 
-         year = 2021)
+  mutate(prop = value / value_sum)
 
 diag.ratio.szk <- bind_rows(diag.dist.szk, diag.2020q4.szk, diag.2021.szk)
 
@@ -204,6 +204,7 @@ sheet.year.ratio.xnt <- his.forecast.xnt %>%
   mutate(value = yhat * prop, 
          volume = value / price) %>% 
   rename(`年` = year, 
+         `季度` = quarter, 
          pack.id = `pack id`) %>% 
   bind_rows(max.cluster.xnt) %>% 
   group_by(`年`, `分组`, `适应症` = diag, `通用名`, `商品名`, `规格`, `包装`, 
@@ -211,6 +212,7 @@ sheet.year.ratio.xnt <- his.forecast.xnt %>%
   summarise(`金额（RMB）` = sum(value, na.rm = TRUE), 
             `数量（盒）` = sum(volume, na.rm = TRUE)) %>% 
   ungroup() %>% 
+  filter(`金额（RMB）` > 0, `数量（盒）` > 0) %>% 
   group_by(`年`, `分组`, `通用名`, `商品名`, `规格`, `包装`, `剂型`, `pack id`) %>% 
   mutate(value_sum = sum(`金额（RMB）`, na.rm = TRUE), 
          volume_sum = sum(`数量（盒）`, na.rm = TRUE)) %>% 
@@ -236,6 +238,7 @@ sheet.year.ratio.szk <- his.forecast.szk %>%
   mutate(value = yhat * prop, 
          volume = value / price) %>% 
   rename(`年` = year, 
+         `季度` = quarter, 
          pack.id = `pack id`) %>% 
   bind_rows(max.cluster.szk) %>% 
   group_by(`年`, `分组`, `适应症` = diag, `通用名`, `商品名`, `规格`, `包装`, 
@@ -243,6 +246,7 @@ sheet.year.ratio.szk <- his.forecast.szk %>%
   summarise(`金额（RMB）` = sum(value, na.rm = TRUE), 
             `数量（盒）` = sum(volume, na.rm = TRUE)) %>% 
   ungroup() %>% 
+  filter(`金额（RMB）` > 0, `数量（盒）` > 0) %>% 
   group_by(`年`, `分组`, `通用名`, `商品名`, `规格`, `包装`, `剂型`, `pack id`) %>% 
   mutate(value_sum = sum(`金额（RMB）`, na.rm = TRUE), 
          volume_sum = sum(`数量（盒）`, na.rm = TRUE)) %>% 
@@ -258,14 +262,16 @@ sheet.quarter.value.xnt <- max.cluster.xnt %>%
            `规格`, `包装`, `剂型`, `pack id` = pack.id) %>% 
   summarise(`金额（RMB）` = sum(value, na.rm = TRUE), 
             `数量（盒）` = sum(volume, na.rm = TRUE)) %>% 
-  ungroup()
+  ungroup() %>% 
+  filter(`金额（RMB）` > 0, `数量（盒）` > 0)
 
 sheet.quarter.value.szk <- max.cluster.szk %>% 
   group_by(`年`, `季度`, `诊断` = diag, `科室` = dept, `通用名`, `商品名`, 
            `规格`, `包装`, `剂型`, `pack id` = pack.id) %>% 
   summarise(`金额（RMB）` = sum(value, na.rm = TRUE), 
             `数量（盒）` = sum(volume, na.rm = TRUE)) %>% 
-  ungroup()
+  ungroup() %>% 
+  filter(`金额（RMB）` > 0, `数量（盒）` > 0)
 
 ## sheet 3
 sheet.quarter.ratio.xnt <- max.cluster.xnt %>% 
@@ -274,6 +280,7 @@ sheet.quarter.ratio.xnt <- max.cluster.xnt %>%
   summarise(`金额（RMB）` = sum(value, na.rm = TRUE), 
             `数量（盒）` = sum(volume, na.rm = TRUE)) %>% 
   ungroup() %>% 
+  filter(`金额（RMB）` > 0, `数量（盒）` > 0) %>% 
   group_by(`年`, `季度`, `分组`, `诊断`, `科室`) %>% 
   mutate(value_sum = sum(`金额（RMB）`, na.rm = TRUE), 
          volume_sum = sum(`数量（盒）`, na.rm = TRUE)) %>% 
@@ -288,6 +295,7 @@ sheet.quarter.ratio.szk <- max.cluster.szk %>%
   summarise(`金额（RMB）` = sum(value, na.rm = TRUE), 
             `数量（盒）` = sum(volume, na.rm = TRUE)) %>% 
   ungroup() %>% 
+  filter(`金额（RMB）` > 0, `数量（盒）` > 0) %>% 
   group_by(`年`, `季度`, `分组`, `诊断`, `科室`) %>% 
   mutate(value_sum = sum(`金额（RMB）`, na.rm = TRUE), 
          volume_sum = sum(`数量（盒）`, na.rm = TRUE)) %>% 
@@ -312,8 +320,3 @@ writeDataTable(wb, 'Sheet2_SZK', sheet.quarter.value.szk)
 writeDataTable(wb, 'Sheet3_XNT', sheet.quarter.ratio.xnt)
 writeDataTable(wb, 'Sheet3_SZK', sheet.quarter.ratio.szk)
 saveWorkbook(wb, '03_Outputs/Merk_HIS_Delivery.xlsx', overwrite = TRUE)
-
-
-
-
-
