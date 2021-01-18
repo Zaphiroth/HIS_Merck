@@ -189,6 +189,11 @@ his.forecast.szk <- his_forecasting_model_1(data = max.szk,
 
 ## sheet 1
 sheet.year.ratio.xnt <- his.forecast.xnt %>% 
+  mutate(date = stri_sub(ds, 6, 10), 
+         flag = if_else(date == '10-01' & `National Day` == 0, 1, 0)) %>% 
+  group_by(date, group) %>% 
+  mutate(yhat = if_else(flag == 1, yhat + median(`National Day`), yhat)) %>% 
+  ungroup() %>% 
   select(Date = ds, yhat, group) %>% 
   separate(group, c('cluster', '分组', 'pack id'), sep = '[+]') %>% 
   mutate(quarter = stri_sub(Date, 6, 7), 
@@ -223,6 +228,11 @@ sheet.year.ratio.xnt <- his.forecast.xnt %>%
          `pack id`, `金额（Ratio）`, `数量（Ratio）`)
 
 sheet.year.ratio.szk <- his.forecast.szk %>% 
+  mutate(date = stri_sub(ds, 6, 10), 
+         flag = if_else(date == '10-01' & `National Day` == 0, 1, 0)) %>% 
+  group_by(date, group) %>% 
+  mutate(yhat = if_else(flag == 1, yhat + median(`National Day`), yhat)) %>% 
+  ungroup() %>% 
   select(Date = ds, yhat, group) %>% 
   separate(group, c('cluster', '分组', 'pack id'), sep = '[+]') %>% 
   mutate(quarter = stri_sub(Date, 6, 7), 
